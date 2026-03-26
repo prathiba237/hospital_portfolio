@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment | LifeCare</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">✙ Life<span>Care</span></div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="doctors.html">Doctors</a></li>
+            <li><a href="my-appointments.html">My Appointments</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="form-card">
+            <h2>Book Your Appointment</h2>
+            <form id="appointmentForm">
+                <div class="form-group">
+                    <label>Doctor Name</label>
+                    <input type="text" id="doctorName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Patient Name</label>
+                    <input type="text" id="patientName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Preferred Date</label>
+                    <input type="date" id="appointmentDate" required>
+                </div>
+
+                <button type="submit" class="btn">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <script>
+        // Autofill doctor name from URL
+        const params = new URLSearchParams(window.location.search);
+        const docName = params.get('doctor');
+        if (docName) document.getElementById('doctorName').value = docName;
+
+        // Check login
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert("Please login to book an appointment.");
+            window.location.href = 'login.html';
+        }
+
+        // Form submit
+        document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const doctorName = document.getElementById('doctorName').value.trim();
+            const patientName = document.getElementById('patientName').value.trim();
+            const appointmentDate = document.getElementById('appointmentDate').value;
+
+            if (!doctorName || !patientName || !appointmentDate) {
+                alert("All fields are required!");
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:5005/api/appointments/bookAppointment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({
+                        doctorName,
+                        patientName,
+                        appointmentDate
+                    })
+                });
+
+                const data = await res.json();
+                console.log("Response:", data);
+
+                if (res.ok) {
+                    alert("✅ Appointment booked successfully!");
+                    window.location.href = 'my-appointments.html';
+                } else {
+                    alert("❌ " + (data.message || "Booking failed"));
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("❌ Server error. Check backend.");
+            }
+        });
+    </script>
+</body>
+</html>

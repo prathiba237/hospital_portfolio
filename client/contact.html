@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | LifeCare</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">✙ Life<span>Care</span></div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="contact.html" class="active">Contact</a></li>
+        </ul>
+    </nav>
+
+    <div class="auth-container">
+        <h2>Get in Touch</h2>
+
+        <form id="contactForm">
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" id="name" placeholder="Enter name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="Enter email" required>
+            </div>
+
+            <div class="form-group">
+                <label>Your Message</label>
+                <textarea id="message" rows="5" placeholder="How can we help?" required></textarea>
+            </div>
+
+            <button type="submit" class="btn-block">Send Message</button>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+
+    <!-- ✅ UPDATED SCRIPT -->
+    <script>
+        const form = document.getElementById('contactForm');
+
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const name = document.getElementById('name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const message = document.getElementById('message').value.trim();
+
+                console.log("Sending:", { name, email, message }); // DEBUG
+
+                // ✅ basic validation
+                if (!name || !email || !message) {
+                    alert("All fields are required!");
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/contact', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name, email, message })
+                    });
+
+                    const data = await res.json();
+                    console.log("Response:", data); // DEBUG
+
+                    if (res.ok) {
+                        alert("✅ Message sent! We will contact you soon.");
+                        form.reset();
+                    } else {
+                        alert("❌ " + (data.message || "Something went wrong"));
+                    }
+
+                } catch (err) {
+                    console.error("Error:", err);
+                    alert("❌ Server error. Check if backend is running.");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

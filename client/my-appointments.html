@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Appointments | LifeCare</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">✙ Life<span>Care</span></div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="appointment.html">Book Appointment</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <h2>Your Booked Appointments</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Doctor Name</th>
+                        <th>Patient Name</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="appBody">
+                    <tr><td colspan="5">Loading appointments...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+
+    <script>
+        async function loadMyApps() {
+            const token = localStorage.getItem('token');
+            const tbody = document.getElementById('appBody');
+
+            if (!token) {
+                alert("Please login first!");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:5005/api/appointments/myAppointments', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+
+                const data = await res.json();
+                console.log("Appointments:", data);
+
+                if (!res.ok) {
+                    throw new Error(data.message || "Failed to load");
+                }
+
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">No appointments found.</td></tr>';
+                    return;
+                }
+
+                data.forEach((app, i) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td>${app.doctorName}</td>
+                            <td>${app.patientName}</td>
+                            <td>${new Date(app.appointmentDate).toLocaleDateString()}</td>
+                            <td>${app.status || 'Booked'}</td>
+                        </tr>
+                    `;
+                });
+
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="5">❌ Error loading data.</td></tr>';
+            }
+        }
+
+        window.onload = loadMyApps;
+    </script>
+</body>
+</html>

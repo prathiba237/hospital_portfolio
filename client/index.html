@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeCare Hospital | Home</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo">✙ Life<span>Care</span></div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="doctors.html">Doctors</a></li>
+            <li><a href="appointment.html">Book Appointment</a></li>
+            <li id="nav-my-apps" class="hide"><a href="my-appointments.html">My Appointments</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li id="nav-login"><a href="login.html" class="btn-nav">Login</a></li>
+            <li id="nav-logout" class="hide"><a href="#" onclick="logout()" class="btn-nav">Logout</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Expert Care, Close to You</h1>
+            <p>Book your medical appointments online with top specialists from the comfort of your home.</p>
+            <a href="appointment.html" class="btn">Get Started</a>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="feature-card">
+            <h3>👨‍⚕️ Top Doctors</h3>
+            <p>Consult with experienced specialists across various departments.</p>
+        </div>
+        <div class="feature-card">
+            <h3>📅 Easy Booking</h3>
+            <p>Schedule your visit in just a few clicks with our simple portal.</p>
+        </div>
+        <div class="feature-card">
+            <h3>🕒 24/7 Support</h3>
+            <p>Our helpdesk is always available for your medical inquiries.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 LifeCare Hospital | Managed by Student Mini Project</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Check if user is logged in to show/hide links
+        window.onload = () => {
+            const token = localStorage.getItem('token');
+            if(token) {
+                document.getElementById('nav-login').classList.add('hide');
+                document.getElementById('nav-logout').classList.remove('hide');
+                document.getElementById('nav-my-apps').classList.remove('hide');
+            }
+        };
+    </script>
+</body>
+</html>

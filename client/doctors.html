@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Doctors | LifeCare</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">✙ Life<span>Care</span></div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="doctors.html" class="active">Doctors</a></li>
+            <li><a href="appointment.html">Book Appointment</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <h2 class="section-title">Verified Medical Specialists</h2>
+
+        <div id="doctorsList" class="grid-container">
+            <p>Loading doctors...</p>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 LifeCare Hospital</p>
+    </footer>
+
+    <script>
+        async function loadDoctors() {
+            const doctorsList = document.getElementById('doctorsList');
+
+            // ✅ fallback doctors (IMPORTANT)
+            const fallbackDoctors = [
+                { name: "Smith", specialization: "Cardiologist", experience: "10 Years", fees: 500 },
+                { name: "John", specialization: "Dentist", experience: "7 Years", fees: 300 },
+                { name: "Priya Sharma", specialization: "Dermatologist", experience: "8 Years", fees: 400 },
+                { name: "Rahul Verma", specialization: "Neurologist", experience: "12 Years", fees: 700 }
+            ];
+
+            try {
+                const res = await fetch('http://localhost:5005/api/doctors');
+
+                if (!res.ok) throw new Error("API failed");
+
+                const doctors = await res.json();
+
+                renderDoctors(doctors);
+
+            } catch (err) {
+                console.warn("⚠ Backend failed, using fallback data");
+                renderDoctors(fallbackDoctors);
+            }
+        }
+
+        function renderDoctors(doctors) {
+            const doctorsList = document.getElementById('doctorsList');
+            doctorsList.innerHTML = '';
+
+            if (!doctors || doctors.length === 0) {
+                doctorsList.innerHTML = "<p>No doctors available.</p>";
+                return;
+            }
+
+            doctors.forEach(doc => {
+                const card = `
+                    <div class="card">
+                        <h3>Dr. ${doc.name}</h3>
+                        <p><strong>Speciality:</strong> ${doc.specialization}</p>
+                        <p><strong>Experience:</strong> ${doc.experience || '5+ Years'}</p>
+                        <p><strong>Fees:</strong> ₹${doc.fees || 500}</p>
+                        <a href="appointment.html?doctor=${encodeURIComponent(doc.name)}" class="btn-sm">Book Now</a>
+                    </div>
+                `;
+                doctorsList.innerHTML += card;
+            });
+        }
+
+        window.onload = loadDoctors;
+    </script>
+</body>
+</html>
