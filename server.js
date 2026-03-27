@@ -5,6 +5,10 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
+// === GEMINI INTEGRATION ===
+// 1. Import the Google Generative AI SDK
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
 // DB
 const connectDB = require('./config/db');
 
@@ -32,6 +36,36 @@ app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/contact', contactRoutes);
+
+// === GEMINI INTEGRATION ===
+// 2. Initialize the AI with your API Key
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// 3. Create the Chatbot Route
+app.post('/api/chat', async (req, res) => {
+    const userMessage = req.body.message;
+
+    if (!userMessage) {
+        return res.status(400).json({ error: 'Message is required' });
+    }
+
+    try {
+        // You can customize the system instruction to fit your specific website
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-2.5-flash-lite",
+            systemInstruction: "You are a helpful virtual assistant for a medical clinic. Answer questions politely and concisely. If they ask about booking, guide them to the appointments page."
+        });
+
+        const result = await model.generateContent(userMessage);
+        const response = await result.response;
+        
+        res.json({ reply: response.text() });
+    } catch (error) {
+        console.error("Gemini API Error:", error);
+        res.status(500).json({ error: "The chatbot is currently taking a coffee break. Please try again later." });
+    }
+});
+// ==========================
 
 // Test route
 app.get('/api', (req, res) => {

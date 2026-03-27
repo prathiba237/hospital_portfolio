@@ -1,5 +1,6 @@
 // Hospital Project Shared JS Logic
 
+// ================= AUTHENTICATION =================
 // Check auth on every page load
 function checkAuthStatus() {
     const token = localStorage.getItem('token');
@@ -70,3 +71,113 @@ async function registerUser(e) {
         alert("Registration failed");
     }
 }
+
+// ================= GEMINI CHATBOT LOGIC =================
+document.addEventListener('DOMContentLoaded', () => {
+    // Get all chatbot UI elements
+    const chatbotBtn = document.getElementById('chatbotBtn');
+    const chatbotWindow = document.getElementById('chatbotWindow');
+    const chatbotClose = document.getElementById('chatbotClose');
+    const chatInput = document.getElementById('chatInput');
+    const chatSend = document.getElementById('chatSend');
+    const chatMessages = document.getElementById('chatMessages');
+
+    // Exit if this page doesn't have the chatbot HTML
+    if (!chatbotBtn || !chatbotWindow) return;
+
+    let isChatOpen = false;
+
+    // Toggle chat window visibility
+    chatbotBtn.addEventListener('click', () => {
+        isChatOpen = !isChatOpen;
+        chatbotWindow.classList.toggle('hidden', !isChatOpen);
+        if (isChatOpen) {
+            chatInput.focus();
+            // Hide the unread badge when opened
+            const badge = document.getElementById('unreadBadge');
+            if(badge) badge.style.display = 'none';
+        }
+    });
+
+    // Close chat window via the 'X' button
+    chatbotClose.addEventListener('click', () => {
+        isChatOpen = false;
+        chatbotWindow.classList.add('hidden');
+    });
+
+    // Send message when pressing "Enter"
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendChatMessage();
+        }
+    });
+
+    // Send message on button click
+    chatSend.addEventListener('click', sendChatMessage);
+
+    async function sendChatMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        // 1. Show user's message in the chat UI
+        addMessageToChat(message, 'user');
+        chatInput.value = '';
+        chatInput.focus();
+
+        // 2. Show a temporary "Typing..." indicator
+        const typingId = 'typing-' + Date.now();
+        addMessageToChat('Typing...', 'bot', typingId);
+
+        try {
+            // 3. Send the message to your backend /api/chat route
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            });
+
+            if (!response.ok) throw new Error('Network error');
+
+            const data = await response.json();
+            
+            // 4. Remove "Typing..." and show Gemini's real reply
+            removeMessage(typingId);
+            addMessageToChat(data.reply, 'bot');
+
+        } catch (error) {
+            console.error('Chat error:', error);
+            removeMessage(typingId);
+            addMessageToChat('Sorry, I encountered an error. Please try again later.', 'bot');
+        }
+    }
+
+    // Helper function to append messages to the chat window
+    function addMessageToChat(text, sender, id = null) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`; // 'user-message' or 'bot-message'
+        if (id) messageDiv.id = id;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.textContent = text;
+        
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'message-time';
+        // Add a nice timestamp (e.g., "10:30 AM")
+        timeSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        messageDiv.appendChild(contentDiv);
+        messageDiv.appendChild(timeSpan);
+        chatMessages.appendChild(messageDiv);
+        
+        // Auto-scroll to the bottom of the chat
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Helper function to remove specific messages (like the typing indicator)
+    function removeMessage(id) {
+        const msgElement = document.getElementById(id);
+        if (msgElement) msgElement.remove();
+    }
+});
